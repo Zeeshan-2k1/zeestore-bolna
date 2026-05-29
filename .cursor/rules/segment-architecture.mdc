@@ -1,0 +1,32 @@
+---
+description: Segment-based architecture for calls and dialers
+globs: "{prisma/schema.prisma,src/lib/**/*.ts,src/app/api/**/*.ts,src/hooks/**/*.ts,src/components/**/*.tsx}"
+alwaysApply: false
+---
+
+# Segment Architecture Rules
+
+Use shared segment-based primitives instead of parallel lead/NDR implementations.
+
+- Prefer a single `Call` model with optional target relations (`shipmentId`, `orderId`, or `userId`) and `segment`.
+- Prefer a single `DialerSettings` model keyed by segment.
+- Reuse shared dialer processing (`processSegmentDialerQueue`) and shared dialer hooks/UI where possible.
+- Keep wrapper files thin (`useAutoDialer`, `useLeadAutoDialer`, lead/NDR API routes).
+- COD specifics:
+  - COD queue should read from `Order` (pre-delivery confirmation).
+  - NDR queue should read from `Shipment` (post-failure recovery).
+  - Webhook should map failed COD outcomes into NDR shipments.
+
+# Refactor Guardrails
+
+- Preserve webhook semantics:
+  - NDR shipment transitions apply only for NDR calls.
+  - COD calls should update `Order` status and create/update NDR shipment on failure paths.
+- Preserve existing API shapes unless explicitly changing contracts.
+- Maintain backward compatibility for dev data when practical (migration/renaming logic).
+
+# UI DRY Expectations
+
+- Reuse common automation components (`AutomateButton`, shared forms/hooks) across segments.
+- If segment-specific styling is needed, pass props/config instead of duplicating components.
+- COD automate filters should stay COD-specific: delivery date, order date, status, product price.

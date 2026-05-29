@@ -1,0 +1,19 @@
+# Bolna Service Ops Agent - Persistent Guidance
+
+This repo uses Cursor rule files in `.cursor/rules/*.mdc` for durable behavior.
+
+Core expectations:
+- Keep implementations DRY and prefer shared segment-based abstractions.
+- COD is a pre-delivery confirmation stage backed by `Order` mapped to `User`.
+- Failed COD outcomes must flow into NDR (`Shipment`) with reason mapping.
+- Never modify `results/` (generated, git-ignored benchmark output).
+- For chaos tests, use Toxiproxy; do not kill Redis directly.
+- For Artillery scenarios, include both `200` and `429` expected status codes.
+- Run `baseline.yml` before any algorithm benchmark.
+- Any PR touching `src/algorithms/` must run `compare.js` in CI.
+- After substantial edits, run type checks and fix introduced errors.
+
+When in doubt, prefer:
+1. Shared utilities/hooks/components over copied segment variants.
+2. Segment-aware generic models/services over duplicated tables or flows.
+3. Small, safe refactors with behavior parity.

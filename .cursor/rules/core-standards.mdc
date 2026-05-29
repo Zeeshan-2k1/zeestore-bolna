@@ -1,0 +1,29 @@
+---
+description: Core standards for all work in this repository
+alwaysApply: true
+---
+
+# Core Standards
+
+- Preserve DRY design: reuse shared segment-aware logic before creating segment-specific duplicates.
+- Do not run destructive git operations unless explicitly asked.
+- Do not modify `results/` (generated benchmark artifacts).
+- Keep changes minimal and behavior-preserving when refactoring.
+- COD domain model:
+  - COD list/confirmation uses `Order` mapped to `User`.
+  - NDR queue uses `Shipment`.
+  - Failed COD outcomes should map into NDR shipments.
+- For benchmark/chaos work:
+  - Use Toxiproxy for chaos tests.
+  - Ensure Artillery scenarios accept both `200` and `429`.
+  - Run `baseline.yml` before algorithm benchmarks.
+  - Ensure `compare.js` is included in CI for `src/algorithms/` changes.
+
+# Validation Expectations
+
+- After meaningful code edits, run:
+  - `npx tsc --noEmit`
+- If schema changed, also run:
+  - `npx prisma db push --accept-data-loss` (dev only, when appropriate)
+  - `npx prisma generate`
+  - restart the Next.js dev server so regenerated Prisma client is picked up

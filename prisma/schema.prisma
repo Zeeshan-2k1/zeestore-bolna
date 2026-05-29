@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  sku              String   @unique
+  name             String
+  price            Int
+  shopifyProductId String?  @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  events           Event[]
+  orders           Order[]
+
+  @@index([name])
+}
+
+model Shipment {
+  id               String   @id @default(cuid())
+  awb              String   @unique
+  orderId          String
+  orderRowId       String?
+  orderRow         Order?   @relation(fields: [orderRowId], references: [id], onDelete: SetNull)
+  customerName     String
+  phone            String
+  secondaryPhone   String?
+  productSummary   String
+  orderAmount      Int
+  paymentType      String   @default("COD")
+  address          String
+  addressShort     String
+  secondaryAddress String?
+  ndrReason        String
+  languagePref     String   @default("hi-en")
+  brandName        String   @default("QuickCart")
+  status           String   @default("NDR_PENDING")
+  incentiveText    String?
+  deliveryDate     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  resolvedAt       DateTime?
+  calls            Call[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deliveryDate])
+  @@index([ndrReason])
+  @@index([paymentType])
+  @@index([customerName])
+  @@index([orderId])
+  @@index([orderRowId])
+}
+
+model Call {
+  id               String    @id @default(cuid())
+  shipmentId       String?
+  shipment         Shipment? @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  orderId          String?
+  order            Order?    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId           String?
+  user             User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bolnaExecutionId String?   @unique
+  segment          String    @default("NDR")
+  triggerSource    String    @default("MANUAL")
+  failureCode      String?
+  status           String    @default("QUEUED")
+  outcome          String?
+  selectedSlotId   String?
+  addressUpdate    String?
+  reason           String?
+  sentiment        String?
+  languageUsed     String?
+  transcript       String?
+  recordingUrl     String?
+  durationSec      Int?
+  costInr          Float?
+  startedAt        DateTime?
+  endedAt          DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([status])
+  @@index([outcome])
+  @@index([createdAt])
+  @@index([shipmentId])
+  @@index([orderId])
+  @@index([userId])
+  @@index([triggerSource])
+  @@index([failureCode])
+  @@index([segment])
+}
+
+model DialerSettings {
+  id                    String    @id @default("NDR")
+  segment               String    @default("NDR") @unique
+  enabled               Boolean   @default(false)
+  batchSize             Int       @default(3)
+  delayBetweenBatchesMs Int       @default(30000)
+  delayBetweenCallsMs   Int       @default(2000)
+  filters               String?
+  lastBatchAt           DateTime?
+  lastCallTriggeredAt   DateTime?
+  lastProcessedAt       DateTime?
+  updatedAt             DateTime  @updatedAt
+}
+
+model User {
+  id                String   @id @default(cuid())
+  shopifyCustomerId String?  @unique
+  email             String?
+  phone             String?
+  firstName         String?
+  lastName          String?
+  address           String?
+  addressShort      String?
+  secondaryAddress  String?
+  secondaryPhone    String?
+  source            String   @default("SHOPIFY")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  events            Event[]
+  orders            Order[]
+  calls             Call[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([createdAt])
+}
+
+model Order {
+  id                   String     @id @default(cuid())
+  userId               String
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId            String?
+  product              Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+  orderRef             String     @unique
+  awb                  String?
+  productSummary       String
+  orderAmount          Int
+  expectedDeliveryDate DateTime
+  orderDate            DateTime   @default(now())
+  address              String
+  addressShort         String
+  paymentType          String     @default("COD")
+  status               String     @default("COD_PENDING")
+  failureReason        String?
+  languagePref         String     @default("hi-en")
+  brandName            String     @default("QuickCart")
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  calls                Call[]
+  shipments            Shipment[]
+
+  @@index([userId])
+  @@index([productId])
+  @@index([status])
+  @@index([expectedDeliveryDate])
+  @@index([orderDate])
+  @@index([paymentType])
+}
+
+model Event {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  platform        String   @default("SHOPIFY")
+  source          String   @default("CLIENT")
+  eventName       String
+  externalEventId String?  @unique
+  occurredAt      DateTime @default(now())
+  properties      String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([productId])
+  @@index([eventName])
+  @@index([occurredAt])
+  @@index([platform])
+  @@index([source])
+}

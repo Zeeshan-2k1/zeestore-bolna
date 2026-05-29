@@ -1,0 +1,47 @@
+{
+  "name": "bolna-service-ops-agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && prisma db push --skip-generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:mock": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "dialer:worker": "tsx scripts/dialer-worker.ts",
+    "leads:worker": "tsx scripts/lead-discovery-worker.ts",
+    "postinstall": "prisma generate",
+    "pretest": "tsx scripts/ensure-test-db.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "lucide-react": "^1.16.0",
+    "next": "15.5.18",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.18",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.3",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
+  }
+}

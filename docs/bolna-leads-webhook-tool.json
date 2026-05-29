@@ -1,0 +1,128 @@
+{
+  "name": "post_api_bolna_webhook_leads",
+  "description": "POST terminal call execution to the ops app LEADS webhook. Call.segment must already be LEADS; CONVERSION creates an Order.",
+  "pre_call_message": "One moment while I submit your call result.",
+  "parameters": {
+    "type": "object",
+    "required": ["id", "execution_id", "status", "extracted_data"],
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Bolna execution id (same as execution_id)"
+      },
+      "execution_id": {
+        "type": "string",
+        "description": "Must match Call.bolnaExecutionId from the outbound LEADS call"
+      },
+      "status": {
+        "type": "string",
+        "description": "Terminal: completed | failed | no-answer | busy",
+        "enum": ["completed", "failed", "no-answer", "busy", "in-progress", "ringing", "initiated"]
+      },
+      "conversation_duration": {
+        "type": "integer",
+        "description": "Call length in seconds (optional)"
+      },
+      "total_cost": {
+        "type": "number",
+        "description": "Bolna-reported execution cost (optional; stored as costInr)"
+      },
+      "transcript": {
+        "type": "string",
+        "description": "Full conversation transcript (optional)"
+      },
+      "recording_url": {
+        "type": "string",
+        "description": "Recording URL (optional)"
+      },
+      "extracted_data": {
+        "type": "object",
+        "required": ["outcome", "reason"],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "description": "LEADS structured outcome — exactly one per call",
+            "enum": ["CONVERSION", "NOT_INTERESTED", "CALLBACK", "NO_ANSWER"]
+          },
+          "reason": {
+            "type": "string",
+            "description": "Short factual summary"
+          },
+          "payment_type": {
+            "type": "string",
+            "description": "Required when outcome is CONVERSION: COD | PREPAID",
+            "enum": ["COD", "PREPAID"]
+          },
+          "order_amount": {
+            "type": "integer",
+            "description": "Confirmed order total in Rupees (CONVERSION)"
+          },
+          "address": {
+            "type": "string",
+            "description": "Full delivery address (CONVERSION)"
+          },
+          "address_short": {
+            "type": "string",
+            "description": "Area, city, PIN shorthand (CONVERSION)"
+          },
+          "product_sku": {
+            "type": "string",
+            "description": "Catalog SKU for the ordered product (CONVERSION)"
+          },
+          "product_id": {
+            "type": "string",
+            "description": "Optional internal product id instead of product_sku"
+          },
+          "order_ref": {
+            "type": "string",
+            "description": "Optional external order reference; auto-generated if omitted"
+          },
+          "expected_delivery_date": {
+            "type": "string",
+            "description": "Optional ISO date YYYY-MM-DD (CONVERSION)"
+          },
+          "language_used": {
+            "type": "string",
+            "description": "Optional: en | hi | hi-en"
+          },
+          "sentiment": {
+            "type": "string",
+            "description": "Optional: positive | neutral | negative"
+          }
+        }
+      }
+    }
+  },
+  "key": "custom_task",
+  "value": {
+    "method": "POST",
+    "url": "https://YOUR_PUBLIC_URL/api/bolna-webhook",
+    "api_token": null,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "param": {
+      "id": "%(id)s",
+      "execution_id": "%(execution_id)s",
+      "status": "%(status)s",
+      "conversation_duration": "%(conversation_duration)i",
+      "total_cost": "%(total_cost)s",
+      "transcript": "%(transcript)s",
+      "recording_url": "%(recording_url)s",
+      "extracted_data": {
+        "outcome": "%(outcome)s",
+        "reason": "%(reason)s",
+        "payment_type": "%(payment_type)s",
+        "order_amount": "%(order_amount)i",
+        "address": "%(address)s",
+        "address_short": "%(address_short)s",
+        "product_sku": "%(product_sku)s",
+        "product_id": "%(product_id)s",
+        "order_ref": "%(order_ref)s",
+        "expected_delivery_date": "%(expected_delivery_date)s",
+        "language_used": "%(language_used)s",
+        "sentiment": "%(sentiment)s"
+      }
+    }
+  }
+}
