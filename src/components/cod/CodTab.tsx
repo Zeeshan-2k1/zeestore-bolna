@@ -3,6 +3,9 @@
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Pagination } from "@/components/ui/Pagination";
+import { SelectField } from "@/components/ui/SelectField";
+import { CodShipmentStatuses } from "@/lib/constants";
+import { formatStatusLabel } from "@/lib/format";
 import type { ShipmentSortField } from "@/lib/shipment-query";
 import { CodTable, type CodOrderRow } from "./CodTable";
 
@@ -38,6 +41,7 @@ export function CodTab({ refreshKey, onRefresh }: Props) {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -55,6 +59,7 @@ export function CodTab({ refreshKey, onRefresh }: Props) {
       order,
     });
     if (searchDebounced) params.set("search", searchDebounced);
+    if (statusFilter) params.set("status", statusFilter);
 
     try {
       const res = await fetch(`/api/cod/shipments?${params}`, { cache: "no-store" });
@@ -79,7 +84,7 @@ export function CodTab({ refreshKey, onRefresh }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, sort, order, searchDebounced]);
+  }, [page, limit, sort, order, searchDebounced, statusFilter]);
 
   useEffect(() => {
     setLoading(true);
@@ -116,6 +121,12 @@ export function CodTab({ refreshKey, onRefresh }: Props) {
     onRefresh();
   }
 
+  function resetFilters() {
+    setSearch("");
+    setStatusFilter("");
+    setPage(1);
+  }
+
   if (loading && rows.length === 0) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-slate-500">
@@ -140,7 +151,7 @@ export function CodTab({ refreshKey, onRefresh }: Props) {
 
       <div className="card p-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-2">
             <div className="relative sm:col-span-2 lg:col-span-1">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
@@ -154,14 +165,26 @@ export function CodTab({ refreshKey, onRefresh }: Props) {
                 className="input-search"
               />
             </div>
+            <SelectField
+              value={statusFilter}
+              onChange={(v) => {
+                setStatusFilter(v);
+                setPage(1);
+              }}
+              aria-label="Filter by status"
+            >
+              <option value="">All statuses</option>
+              {CodShipmentStatuses.map((s) => (
+                <option key={s} value={s}>
+                  {formatStatusLabel(s)}
+                </option>
+              ))}
+            </SelectField>
           </div>
           <button
             type="button"
-            onClick={() => {
-              setSearch("");
-              setPage(1);
-            }}
-            className="text-sm text-slate-500 hover:text-slate-800"
+            onClick={resetFilters}
+            className="shrink-0 text-sm text-slate-500 hover:text-slate-800"
           >
             Clear filters
           </button>

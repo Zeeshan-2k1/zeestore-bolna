@@ -1,4 +1,9 @@
-import { CallStatus, CallTriggerSource, OpsSegment, ShipmentStatus } from "./constants";
+import {
+  CallStatus,
+  CallTriggerSource,
+  CodCallableOrderStatuses,
+  OpsSegment,
+} from "./constants";
 import {
   getOrCreateDialerSettings,
   processSegmentDialerQueue,
@@ -9,12 +14,6 @@ import {
 import { db } from "./db";
 import { parseDialerFilters } from "./dialer-filters";
 import { triggerCallForCodOrder } from "./cod-trigger-call";
-
-const COD_CALLABLE = [
-  ShipmentStatus.COD_PENDING,
-  ShipmentStatus.COD_CALLBACK,
-  ShipmentStatus.NO_ANSWER,
-];
 
 export async function getOrCreateCodDialerSettings() {
   return getOrCreateDialerSettings(OpsSegment.COD);
@@ -39,7 +38,7 @@ export async function processCodDialerQueue(): Promise<CodDialerProcessResult> {
       db.order.findMany({
         where: {
           paymentType: "COD",
-          status: { in: COD_CALLABLE },
+          status: { in: [...CodCallableOrderStatuses] },
           ...(filters?.productPrice
             ? {
                 orderAmount:

@@ -126,6 +126,14 @@ export const OrderStatus = {
   CANCELLED: "CANCELLED",
 } as const;
 
+/** Order statuses eligible for outbound COD confirmation / retry calls */
+export const CodCallableOrderStatuses = [
+  OrderStatus.COD_PENDING,
+  OrderStatus.COD_CALLBACK,
+  OrderStatus.COD_UNREACHABLE,
+  ShipmentStatus.NO_ANSWER,
+] as const;
+
 export const CallStatus = {
   QUEUED: "QUEUED",
   IN_PROGRESS: "IN_PROGRESS",

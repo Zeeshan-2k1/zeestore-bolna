@@ -3,17 +3,14 @@ import { classifyCallError } from "./call-errors";
 import {
   CallStatus,
   CallTriggerSource,
+  CodCallableOrderStatuses,
   OpsSegment,
   ShipmentStatus,
   type CallTriggerSourceValue,
 } from "./constants";
 import { db } from "./db";
 
-const COD_CALLABLE_STATUSES = new Set<string>([
-  ShipmentStatus.COD_PENDING,
-  ShipmentStatus.COD_CALLBACK,
-  ShipmentStatus.NO_ANSWER,
-]);
+const COD_CALLABLE_STATUSES = new Set<string>(CodCallableOrderStatuses);
 
 export type TriggerCodCallResult =
   | {
